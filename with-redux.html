@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.0/redux.min.js"></script>
+</head>
+<body>
+<style>
+    .container{
+        border : 5px solid black;
+        padding: 10px;
+    }
+</style>
+<div id="red"></div>
+<div id="blue"></div>
+<div id="green"></div>
+<script>
+function reducer(state, action){
+    console.log(`${JSON.stringify(state)}${JSON.stringify(action)}`); //최초 1회 실행
+    var newState;
+    if(state === undefined){ //최초 초기화 단계(최초 store생성시)
+        return {color : 'yellow'} //state 초기값지정   
+    }
+    if(action.type==='CHANGE_COLOR'){ //store.dispatch({type: CHANGE_COLOR, color:'red'}) type, color라는 속성
+        newState = Object.assign({}, state , {color:action.color});
+    }
+    console.log(action.type, action, state, newState);
+    return newState;
+}
+var store = Redux.createStore
+    (reducer,
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+); // store가 전역변수에 저장이됨(리듀서를 통해 state 값을 만듦), 즉 createStore 콜백함수에서 reducer 호출
+//console.log(store.getState()); //state 값 가져옴 - 초기화 확인 > 초기화 됐다면 yellow 객체를 반환
+function red(){
+    var state = store.getState(); //state가져오기
+    document.querySelector('#red').innerHTML= `
+        <div class="container" id="component_red" style="background-color : ${state.color}">
+            <h1>red</h1>
+            <input type="button" value="fire" onClick=" 
+                store.dispatch({type:'CHANGE_COLOR', color:'red'}); 
+            "/>
+        </div>
+    `;
+}
+store.subscribe(red);
+red();
+
+function blue(){
+    var state = store.getState(); //state가져오기
+    document.querySelector('#blue').innerHTML= `
+        <div class="container" id="component_blue" style="background-color : ${state.color}">
+            <h1>blue</h1>
+            <input type="button" value="fire" onClick=" 
+                store.dispatch({type:'CHANGE_COLOR', color:'blue'}); 
+            "/>
+        </div>
+    `;
+}
+store.subscribe(blue);
+blue();
+function green(){
+    var state = store.getState(); //state가져오기
+    document.querySelector('#green').innerHTML= `
+        <div class="container" id="component_green" style="background-color : ${state.color}">
+            <h1>green</h1>
+            <input type="button" value="fire" onClick=" 
+                store.dispatch({type:'CHANGE_COLOR', color:'green'}); 
+            "/>
+        </div>
+    `;
+}
+store.subscribe(green);
+green();
+
+</script>
+</body>
+</html>

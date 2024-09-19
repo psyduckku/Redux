@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header></header>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.0/redux.min.js"></script>
+    </header>
+<body>
+    <div id="subject"></div>
+    <div id="toc"></div>
+    <div id="control"></div>
+    <div id="content"></div>
+    <script>
+
+var aTitle;
+var aDesc;
+
+function reducer(state, action){
+        
+        if(state === undefined){ //초기값 설정
+            return {
+                mode: null,
+                selected_id: 1,
+                contents: [
+                    {id:1, title: 'HTML', desc: 'HTML is ..'},
+                    {id:2, title: 'CSS', desc: 'CSS is..'}
+                ]
+            }
+        }
+        
+        var newState;
+        if(action.type === 'SELECT'){
+            newState = Object.assign({}, state, {selected_id: action.id}); //이부분에서 selected_id가 action.id로 바뀜
+        }
+                
+        const content = document.querySelector('#content');
+
+        return newState;
+    }
+
+const store = Redux.createStore(reducer);
+
+function subject(){
+    document.querySelector('#subject').innerHTML = `
+        <header>
+        <h1>WEB</h1>
+        Hello, WEB!
+        </header>
+    `;
+}
+function TOC(){ //Topic table Of Content . 글목록을 나타낼때 씀
+    const state = store.getState();
+    // console.log(state);
+    let i = 0;
+    let liTags = '';
+    while(i<state.contents.length){
+        liTags += `
+            <li> 
+                <a onclick="event.preventDefault();
+                    let action = {type: 'SELECT', id:${state.contents[i].id}, mode:'READ'} 
+                    store.dispatch(action);
+                "
+                    href="${state.contents[i].id}"
+                > 
+                ${state.contents[i].title} 
+                </a> 
+            </li>`;
+        i = i + 1;
+    }
+
+    
+    document.querySelector('#toc').innerHTML=`
+        <ol>${liTags}</ol>
+    `;
+
+}
+function writeSub(){
+    alert('a');
+}
+function control(){
+    document.querySelector('#control').innerHTML=`
+            <ul>
+            <li><a href="/create"
+                
+                onclick="event.preventDefault();"
+                >
+                create    
+            </a></li>
+            <li><input type="button" value="delete"></input></li>
+        </ul>`;
+}
+function article(){
+    const state = store.getState();
+    var i = 0;
+    while(i<state.contents.length){
+        if(state.contents[i].id === state.selected_id){
+            aTitle = state.contents[i].title;
+            aDesc = state.contents[i].desc;
+            break;
+        }
+        i++;
+    }
+
+    document.querySelector('#content').innerHTML=`
+        <article>
+        <h2>${aTitle}</h2>
+        ${aDesc}
+    </article>`;
+}
+
+
+
+subject();
+TOC();
+control();
+article();
+store.subscribe(article);
+
+    </script>
+    
+
+</body>
+</html>
