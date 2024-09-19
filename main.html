@@ -14,11 +14,12 @@ var aTitle;
 var aDesc;
 
 function reducer(state, action){
-        
-        if(state === undefined){ //초기값 설정
+        // console.log(state, action);
+        if(state === undefined){ // state 초기값 설정
             return {
-                mode: null,
-                selected_id: 1,
+                max_id : 2,
+                mode: 'read',
+                selected_id: 2,
                 contents: [
                     {id:1, title: 'HTML', desc: 'HTML is ..'},
                     {id:2, title: 'CSS', desc: 'CSS is..'}
@@ -28,11 +29,42 @@ function reducer(state, action){
         
         var newState;
         if(action.type === 'SELECT'){
-            newState = Object.assign({}, state, {selected_id: action.id}); //이부분에서 selected_id가 action.id로 바뀜
-        }
+            newState = Object.assign({}, state, {selected_id: action.id},{mode : action.mode}); //이부분에서 selected_id가 action.id로 바뀜
+        }else if(action.type === 'CREATE'){
+            console.log(action.mode);
+            var newMaxId = state.max_id+1;
+            var newContents = state.contents.concat();
+            newContents.push({id: newMaxId, title : action.title, desc :action.desc});
+            newState = Object.assign({}, state, {
+                max_id: newMaxId,
+                contents: newContents,
+                mode: action.mode,
+                selected_id: newMaxId
+            });
+        }else if(action.type === 'CHANGE_MODE'){
+            newState = Object.assign({}, state, {
+                mode: action.mode
+            });
+            return newState;
+        }else if(action.type === 'DELETE'){
+            var i=0;
+            var newContents =[];
+            while(i < state.contents.length){
                 
-        const content = document.querySelector('#content');
+                if(state.contents[i].id !== state.selected_id){
+                    console.log(state.selected_id);
+                    newContents.push(state.contents[i]);
+                }
+                i = i + 1; 
+            }
+            newState = Object.assign({}, state, {
+                contents : newContents,
+                mode: 'welcome'
+            });
+            
+        }
 
+        // console.log(action, state, newState);
         return newState;
     }
 
@@ -42,7 +74,7 @@ function subject(){
     document.querySelector('#subject').innerHTML = `
         <header>
         <h1>WEB</h1>
-        Hello, WEB!
+        Hello, WEB!11
         </header>
     `;
 }
@@ -54,12 +86,11 @@ function TOC(){ //Topic table Of Content . 글목록을 나타낼때 씀
     while(i<state.contents.length){
         liTags += `
             <li> 
-                <a onclick="event.preventDefault();
-                    let action = {type: 'SELECT', id:${state.contents[i].id}, mode:'READ'} 
+                <a onclick=
+                    "event.preventDefault();
+                    var action = {type: 'SELECT', id: ${state.contents[i].id}, mode: 'read'}
                     store.dispatch(action);
-                "
-                    href="${state.contents[i].id}"
-                > 
+                 " href="${state.contents[i].id}"> 
                 ${state.contents[i].title} 
                 </a> 
             </li>`;
@@ -72,38 +103,69 @@ function TOC(){ //Topic table Of Content . 글목록을 나타낼때 씀
     `;
 
 }
-function writeSub(){
-    alert('a');
-}
 function control(){
     document.querySelector('#control').innerHTML=`
-            <ul>
-            <li><a href="/create"
-                
-                onclick="event.preventDefault();"
-                >
-                create    
-            </a></li>
-            <li><input type="button" value="delete"></input></li>
+        <ul>
+            <li><a onclick=
+                "event.preventDefault();
+                store.dispatch({type: 'CHANGE_MODE', mode: 'create'});
+                href='/create'">create</a></li>
+            <li><input type="button" value="delete"
+                onclick="
+                    store.dispatch({type : 'DELETE'});
+                "
+                ></input></li>
         </ul>`;
 }
 function article(){
     const state = store.getState();
-    var i = 0;
-    while(i<state.contents.length){
-        if(state.contents[i].id === state.selected_id){
+    // console.log(state);
+    if(state.mode==='create'){
+        document.querySelector('#content').innerHTML=`
+            <article>
+                <form onsubmit="
+                    event.preventDefault();
+                    const _title = this.title.value;
+                    const _desc = this.desc.value;
+                    store.dispatch({type:'CREATE', title:_title, desc:_desc, mode: 'read'});
+                ">
+                    <p>
+                        <input type="text" name="title" placeholder="title">
+                    </p>
+                    <p>
+                        <textarea name="desc" placeholder="description"></textarea>
+                    </p>
+                    <p>
+                        <input type="submit">
+                    </p>
+                </form>
+            </article>
+        `;
+    }else if(state.mode==='read'){
+        console.log('선택된 아이디'+state.selected_id);
+        var i = 0;
+        while(i<state.contents.length){
+        if(state.contents[i].id === state.selected_id){ //이부분이 잘 이해가 가지 않음.
             aTitle = state.contents[i].title;
             aDesc = state.contents[i].desc;
             break;
         }
-        i++;
-    }
-
-    document.querySelector('#content').innerHTML=`
+            i=i+1;
+        }
+        document.querySelector('#content').innerHTML=`
         <article>
         <h2>${aTitle}</h2>
         ${aDesc}
-    </article>`;
+        </article>`;
+    }else if(state.mode==='welcome'){
+        document.querySelector('#content').innerHTML=`
+        <article>
+        <h2>welcome</h2>
+        welcome
+        </article>`;
+    }
+
+
 }
 
 
@@ -113,6 +175,7 @@ TOC();
 control();
 article();
 store.subscribe(article);
+store.subscribe(TOC);
 
     </script>
     

@@ -23,6 +23,7 @@ function reducer(state, action){
     if(action.type==='CHANGE_COLOR'){ //store.dispatch({type: CHANGE_COLOR, color:'red'}) type, color라는 속성
         newState = Object.assign({}, state , {color:action.color});
     }
+
     console.log(action.type, action, state, newState);
     return newState;
 }
